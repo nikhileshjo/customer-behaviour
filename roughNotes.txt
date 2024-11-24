@@ -1,0 +1,2 @@
+idempotent : These are functions that produce the same output for a given input no matter
+how many times you run it. These are used in data pipelines incase a rerun is required.
