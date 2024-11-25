@@ -19,3 +19,22 @@ pgcli -h localhost -p 5432 -U airflow -d airflow
 -p port number
 -U user name
 -d database name
+
+
+Loading data into table:
+\copy retail.user_purchase(invoice_number,
+stock_code,detail,quantity,
+invoice_date,unit_price,customer_id,country) 
+FROM 'D:/Data Engineering/Project/customer-behaviour/customer-behaviour/data/retail/OnlineRetail.csv' 
+DELIMITER ','  CSV HEADER;
+
+
+
+Okay, so, the above command is pretty self explainatory, but here's a catch see the "\" in the start?
+That's used to upload data onto a remote server. Incase your postgres is running locally, it's not required.
+But here's the thing, the postgres server that we're using is actually running on docker, so complely
+isolated from the local machine, so it is like uploading it to a remote server and can't be treated
+like a local server and miss the "\".
+One more thing, use "\copy" and not "\COPY" when using pgcli, this is because pgcli does not expect
+it to be in caps. While postgres itself is case insensitive, pgcli is not(in some cases like this).
+This won't happen if we use the standard CLI, psql, it handles both the cases well.
