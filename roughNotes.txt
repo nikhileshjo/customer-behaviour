@@ -1,2 +1,21 @@
 idempotent : These are functions that produce the same output for a given input no matter
 how many times you run it. These are used in data pipelines incase a rerun is required.
+
+We have copied the starter files to set up the local infrastructure, this will save us time from
+doing unnecessary work.
+
+
+Common docker commands:
+docker-compose -f docker-compose-LocalExecutor.yml up -d  :
+docker-compose A Docker tool to define and manage multi-container applications using a YAML configuration file.
+-f option tell docker-compose that we're passing a file(docker-compose-LocalExecutor.yml)
+up : this will build, create, start and attach container. Incase it's not build, it build it first
+-d : this ensures the continer runs in the background, so you get your terminal control back after spinning it up.
+
+
+pgcli connection: 
+pgcli -h localhost -p 5432 -U airflow -d airflow
+-h is host IP address
+-p port number
+-U user name
+-d database name
