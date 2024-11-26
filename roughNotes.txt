@@ -34,7 +34,8 @@ Okay, so, the above command is pretty self explainatory, but here's a catch see 
 That's used to upload data onto a remote server. Incase your postgres is running locally, it's not required.
 But here's the thing, the postgres server that we're using is actually running on docker, so complely
 isolated from the local machine, so it is like uploading it to a remote server and can't be treated
-like a local server and miss the "\".
+like a local server and miss the "\". Commands starting with "\" run on the client side and not the
+server side and so, it's able to access the file that the server can't.
 One more thing, use "\copy" and not "\COPY" when using pgcli, this is because pgcli does not expect
 it to be in caps. While postgres itself is case insensitive, pgcli is not(in some cases like this).
 This won't happen if we use the standard CLI, psql, it handles both the cases well.
