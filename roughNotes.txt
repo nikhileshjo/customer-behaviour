@@ -39,3 +39,9 @@ server side and so, it's able to access the file that the server can't.
 One more thing, use "\copy" and not "\COPY" when using pgcli, this is because pgcli does not expect
 it to be in caps. While postgres itself is case insensitive, pgcli is not(in some cases like this).
 This won't happen if we use the standard CLI, psql, it handles both the cases well.
+
+Your text editor could say that you have introduced a few errors when writing a DAG file, but what's
+important is that you write the file based on the Airflow instance that running and not the "pip" module
+you've installed, because DAG file is like a config file to Airflow. Unlike a regular python file,
+python will not execute the file, it's Airflow that will execute it. Also, wait for about 5 mins or so
+for your DAG to appear in Airflow.

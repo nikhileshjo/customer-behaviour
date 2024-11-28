@@ -2,6 +2,10 @@ from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.postgres_operator import PostgresOperator
+
+unload_user_purchase = './scripts/sql/filter_unload_user_purchase.sql'
+temp_filtered_user_purchase = '/temp/temp_filtered_user_purchase.csv'
 
 default_args = {
     "owner" : "airflow",
@@ -19,4 +23,14 @@ dag = DAG("user_behaviour", default_args=default_args, schedule_interval="0 0 * 
 
 end_of_data_pipeline = DummyOperator(task_id='end_of_data_pipeline', dag=dag)
 
-end_of_data_pipeline
+pg_unload = PostgresOperator(
+    dag  = dag,
+    task_id = 'pg_unload',
+    sql = unload_user_purchase,
+    postgres_conn_id = 'postgres_default',
+    params = {'temp_filtered_user_purchase': temp_filtered_user_purchase},
+    depends_on_past = True,
+    wait_for_downstream = True
+)
+
+pg_unload>>end_of_data_pipeline
