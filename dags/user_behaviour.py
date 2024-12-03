@@ -9,12 +9,12 @@ import os
 
 unload_user_purchase = './scripts/sql/filter_unload_user_purchase.sql'
 temp_filtered_user_purchase = '/temp/temp_filtered_user_purchase.csv'
-BUCKET_NAME = ''
+BUCKET_NAME = 'customer-behaviour'
 temp_filtered_user_purchase_key = 'user_purchase/stage/{{ds}}/temp_filtered_user_purchase.csv'
 
 def _local_to_s3(filename, key, bucket_name = BUCKET_NAME) :
-    s3 = S3Hook()
-    s3.local_file(filename = filename, bucket_name = bucket_name, replace = True, key = key)
+    s3 = S3Hook('s3_conn')
+    s3.load_file(filename = filename, bucket_name = bucket_name, replace = True, key = key)
 
 def remove_local_file(filelocation):
     if os.path.isfile(filelocation):

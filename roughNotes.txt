@@ -45,3 +45,17 @@ important is that you write the file based on the Airflow instance that running 
 you've installed, because DAG file is like a config file to Airflow. Unlike a regular python file,
 python will not execute the file, it's Airflow that will execute it. Also, wait for about 5 mins or so
 for your DAG to appear in Airflow.
+
+
+Creating a connection with AWS for Airflow:
+log in to Airflow UI >> Admin >> connections >> create
+Name the connection, conn type: Amazon web services / Amazon s3/ S3 (depending on airflow version)
+Now, this connection will be used to instanstiate the hook in Airflow `S3Hook('connection name')`
+
+Always add the region when connecting to a S3 bucket, the buckets are assigned a region(always) so
+make sure your connection URL does not say 'global'
+Add this in extra:
+Example(Change region according to your bucket)
+{
+   "region_name": "ap-southeast-2"
+}
