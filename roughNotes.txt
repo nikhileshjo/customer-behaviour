@@ -59,3 +59,7 @@ Example(Change region according to your bucket)
 {
    "region_name": "ap-southeast-2"
 }
+
+AWS EMR:
+When creating an AWS EMR instance, we can add a Bootstrap file from S3 bucket. This is a ssh file
+which is run the first thing after cluster creation. It's useful for configuring the server better.
