@@ -6,7 +6,7 @@
             "Jar" : "command-runner.jar",
             "Args" : [
                 "s3-dist-cp",
-                "--src=s3://{{ params.BUCKET_NAME }}/{{ params.movie_reviws_load }}",
+                "--src=s3://{{ params.BUCKET_NAME }}/{{ params.movie_review_load }}",
                 "--dest=/movie"
             ]
         }
@@ -30,7 +30,7 @@
             "Args" :[
                 "s3-dist-cp",
                 "--src=/output",
-                "--dest=s3://{{ params.BUCKET_NAME }}/{{ params.movie_reviws_stage }}"
+                "--dest=s3://{{ params.BUCKET_NAME }}/{{ params.movie_review_stage }}"
             ]
         }
     }

@@ -22,7 +22,7 @@ temp_filtered_user_purchase_key = 'user_purchase/stage/{{ds}}/temp_filtered_user
 movie_clean_emr_steps = './dags/scripts/sql/emr/clean_movie_review.json'
 movie_text_classification_script = './dags/scripts/spark/random_text_classification.py'
 
-EMR_ID = 'j-1L8VC94KC6MI2'
+EMR_ID = 'j-1U01R70YCD4F0'
 movie_review_load_folder = 'movie_review/load/'
 movie_review_stage = 'movie_review/stage/'
 text_classifier_script = 'scripts/random_text_classifier.py'
