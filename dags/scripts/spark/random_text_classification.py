@@ -9,7 +9,7 @@ from pyspark.sql.functions import lit
 
 def random_text_classifier(input_loc, output_loc):
     schema = StructType([
-    StructField('cid', IntegerType(), True),   # Column name with String type
+    StructField('cid', StringType(), True),   # Column name with String type
     StructField('review_str', StringType(), True),  # Column age with Integer type
     ])
     df_raw = spark.read.option('header', 'true') \

@@ -63,3 +63,18 @@ Example(Change region according to your bucket)
 AWS EMR:
 When creating an AWS EMR instance, we can add a Bootstrap file from S3 bucket. This is a ssh file
 which is run the first thing after cluster creation. It's useful for configuring the server better.
+
+
+Connecting to Redshift
+pgcli -h <your-redshift-host> -U <your-user-name> -p 5439 -d <yourredshift-database>
+
+When connecting to Redshift, there's a conflict in encoding between Psycopg and AWS
+https://github.com/psycopg/psycopg2/issues/1539
+So, the fix is as suggested in the link above, if you've installed python in the default location,
+you need to add the below code to the file:
+_encodings.py
+
+Add key value pair to the dictionary _py_codecs
+"UNICODE": "utf-8"
+
+and you'll be able to login to AWS

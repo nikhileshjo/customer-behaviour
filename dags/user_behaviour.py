@@ -10,6 +10,10 @@ from airflow.operators import PythonOperator
 from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
 
+#imports for Redshift
+from airflow.hooks.postgres_hook import PostgresHook
+import psycopg2
+
 unload_user_purchase = './scripts/sql/filter_unload_user_purchase.sql'
 temp_filtered_user_purchase = '/temp/temp_filtered_user_purchase.csv'
 
@@ -22,10 +26,12 @@ temp_filtered_user_purchase_key = 'user_purchase/stage/{{ds}}/temp_filtered_user
 movie_clean_emr_steps = './dags/scripts/sql/emr/clean_movie_review.json'
 movie_text_classification_script = './dags/scripts/spark/random_text_classification.py'
 
-EMR_ID = 'j-1U01R70YCD4F0'
+EMR_ID = 'j-124RCUP494X4G'
 movie_review_load_folder = 'movie_review/load/'
 movie_review_stage = 'movie_review/stage/'
 text_classifier_script = 'scripts/random_text_classifier.py'
+
+get_user_behaviour = 'scripts/sql/get_user_behavior_metrics.sql'
 
 def _local_to_s3(filename, key, bucket_name = BUCKET_NAME) :
     s3 = S3Hook('s3_conn')
@@ -36,6 +42,15 @@ def remove_local_file(filelocation):
         os.remove(filelocation)
     else:
         logging.info(f'File {filelocation} not found')
+
+def run_redshift_external_query(qry):
+    rs_hook = PostgresHook(postgres_conn_id='redshift')
+    rs_conn = rs_hook.get_conn()
+    rs_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    rs_cursor = rs_conn.cursor()
+    rs_cursor.execute(qry)
+    rs_cursor.close()
+    rs_conn.commit()
 
 default_args = {
     "owner" : "airflow",
@@ -137,8 +152,24 @@ movie_review_to_s3_stage = PythonOperator(
 )
 
 
-#PostgreSQL to Redshift
-pg_unload>>user_purchase_to_s3_stage>>remove_local_user_purchase_file>>end_of_data_pipeline
+# insert data in Redshift
+user_purchase_to_rs_stage = PythonOperator(
+    dag = dag,
+    task_id = 'user_purchase_to_rs_stage',
+    python_callable = run_redshift_external_query,
+    op_kwargs = {
+        'qry' : "alter table spectrum.user_purchase_staging add partition(insert_date='{{ ds }}') \
+            location 's3://customer-behaviour/user_purchase/stage/{{ ds }}'"
+    },
+)
 
-#CSV dropped by client to Redshift
+get_user_behaviour = PostgresOperator(
+    dag = dag,
+    task_id = 'get_user_behaviour',
+    sql = get_user_behaviour,
+    postgres_conn_id = 'redshift'
+)
+
+pg_unload >> user_purchase_to_s3_stage >> remove_local_user_purchase_file >> user_purchase_to_rs_stage
 [movie_review_to_s3_stage, emr_script_to_s3] >> add_emr_steps >> clean_movie_review_data
+[user_purchase_to_rs_stage, clean_movie_review_data] >> get_user_behaviour >> end_of_data_pipeline
