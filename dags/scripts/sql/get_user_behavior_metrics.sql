@@ -11,7 +11,13 @@ sum(mrcs.positive_review) as review_score,
 count(mrcs.cid) as review_count,
 '{{ ds }}' 
 FROM spectrum.user_purchase_staging ups  
-JOIN (select cid, case when positive_review is True then 1 else 0 end as positive_review from spectrum.movie_review_clean_stage) mrcs  
+JOIN (select 
+        cid,
+        case
+            when positive_review is True then 1 
+            else 0 
+            end as positive_review
+    from spectrum.movie_review_clean_stage) mrcs  
 ON ups.customerid = mrcs.cid 
 WHERE ups.insert_date = '{{ ds }}' 
 GROUP BY ups.customerid;

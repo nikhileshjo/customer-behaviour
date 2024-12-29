@@ -9,6 +9,7 @@ from airflow.hooks.S3_hook import S3Hook
 from airflow.operators import PythonOperator
 from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
+from airflow.models import taskinstance
 
 #imports for Redshift
 from airflow.hooks.postgres_hook import PostgresHook
@@ -26,7 +27,7 @@ temp_filtered_user_purchase_key = 'user_purchase/stage/{{ds}}/temp_filtered_user
 movie_clean_emr_steps = './dags/scripts/sql/emr/clean_movie_review.json'
 movie_text_classification_script = './dags/scripts/spark/random_text_classification.py'
 
-EMR_ID = 'j-124RCUP494X4G'
+EMR_ID = 'j-3R6VF9G727AQI'
 movie_review_load_folder = 'movie_review/load/'
 movie_review_stage = 'movie_review/stage/'
 text_classifier_script = 'scripts/random_text_classifier.py'
@@ -51,6 +52,12 @@ def run_redshift_external_query(qry):
     rs_cursor.execute(qry)
     rs_cursor.close()
     rs_conn.commit()
+
+def fail_on_zero(**kwargs):
+    ti = kwargs['ti']
+    count = ti.xcom_pull(task_ids='get_count')
+    if count == 0:
+        raise ValueError("Count is 0. Failing the task.")
 
 default_args = {
     "owner" : "airflow",
@@ -170,6 +177,21 @@ get_user_behaviour = PostgresOperator(
     postgres_conn_id = 'redshift'
 )
 
+get_count = PostgresOperator(
+        dag = dag,
+        task_id='get_count',
+        postgres_conn_id='redshift',
+        sql="SELECT COUNT(*) FROM public.user_behavior_metric WHERE insert_date = '{{ ds }}';",
+        do_xcom_push=True,
+    )
+
+validate_count = PythonOperator(
+        dag = dag,
+        task_id='validate_count',
+        python_callable=fail_on_zero,
+        provide_context=True
+    )
+
 pg_unload >> user_purchase_to_s3_stage >> remove_local_user_purchase_file >> user_purchase_to_rs_stage
 [movie_review_to_s3_stage, emr_script_to_s3] >> add_emr_steps >> clean_movie_review_data
-[user_purchase_to_rs_stage, clean_movie_review_data] >> get_user_behaviour >> end_of_data_pipeline
+[user_purchase_to_rs_stage, clean_movie_review_data] >> get_user_behaviour >> get_count >> validate_count >> end_of_data_pipeline

@@ -78,3 +78,30 @@ Add key value pair to the dictionary _py_codecs
 "UNICODE": "utf-8"
 
 and you'll be able to login to AWS
+
+
+Understanding a few terms:
+
+wait_for_downstream : It waits for the immediate downstream task of the previously ran instance to finish. For example:
+This is my task order A>>B>>C>>D
+
+if the task ran yesterday ie on 21 Dec, then today's task A from 22 Dec, will wait for B from 21 Dec to finish before it starts.
+The task B will wait for task C from yesterday and so on.
+Note: if wait_for_downstream is set True, then depends_on_past is forced to True.
+
+
+depends_on_past : It checks if the previously ran instance of the same task was completed.
+So again, A>>B>>C>>D if this ran yesterday and is running again today, let's say B, it will check
+if B from yesterday(21 Dec) was successful and only if true, it will run B today(22 Dec).
+
+Airflow xcom:
+Before you learn about xcom, you need to know a little about task instance:
+https://airflow.apache.org/docs/apache-airflow/stable/public-airflow-interface.html#task-instances
+Basically, it's a pointer to the task, like 'self' in python class.
+Now, about xcom. This is a way of passing data between tasks. This does not allow exchange of enoumous amounts of data like dataframes.
+But it can allow things like metadata, or a value returned (same as what we're doing)
+
+
+
+One thing to learn about the EMR Bootstrap is that as long as the bootstarp are in the list, they all are executed.
+The radio buttons are there to manipulate them, you can remove one of the files using it.
